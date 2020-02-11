@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"ginexample/middlewares/jwtauth"
+	"ginexample/handlers/ping"
 	"ginexample/middlewares/logs"
 )
 
@@ -31,7 +32,7 @@ func SetupRouter() *gin.Engine {
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
 		auth.GET("/hello", jwtauth.HelloHandler)
-		auth.GET("/ping", Index)
+		auth.GET(ping.PingUri, ping.Ping)
 	}
 	return r
 }
