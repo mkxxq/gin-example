@@ -2,21 +2,36 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 
+	"ginexample/middlewares/jwtauth"
 	"ginexample/middlewares/logs"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(logs.CustomeLogMiddleware())
 
-	g := r.Group("/api")
-	g.Use(logs.CustomeLogMiddleware())
+	authMiddleware := jwtauth.SetupAuthMiddleware()
+	r.POST("/login", authMiddleware.LoginHandler)
+
+	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
+		claims := jwt.ExtractClaims(c)
+		log.Printf("NoRoute claims: %#v\n", claims)
+		c.JSON(404, gin.H{"message": "Page not found"})
+	})
+
+	auth := r.Group("/auth")
+	// Refresh time can be longer than token timeout
+	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+	auth.Use(authMiddleware.MiddlewareFunc())
 	{
-		g.GET("/index", Index)
-		g.POST("/user", InsertUser)
+		auth.GET("/hello", jwtauth.HelloHandler)
+		auth.GET("/ping", Index)
 	}
 	return r
 }

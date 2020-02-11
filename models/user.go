@@ -10,7 +10,7 @@ type User struct {
 
 
 func(obj *User) InsertUser(tx *sqlx.DB)(int64 ,error){
-	sql := "INSERT INTO t_user	(name)VALUES(?)"
+	sql := "INSERT INTO t_user(name) VALUES(?)"
 	res, err := tx.Exec(sql, obj.Name)
 	if err != nil{
 		return 0, err
